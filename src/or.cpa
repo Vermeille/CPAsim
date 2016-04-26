@@ -1,0 +1,5 @@
+module or(a, b) {
+
+out[0] = a + b;
+
+}
