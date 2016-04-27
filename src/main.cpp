@@ -14,6 +14,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    Parser::ParseModuleDef(input_file)->PrettyPrint();
+    std::unique_ptr<Module> mod(Parser::ParseModuleDef(input_file));
+    mod->BindUsagesToDef();
+    mod->PrettyPrint();
     return 0;
 }

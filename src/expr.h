@@ -31,6 +31,8 @@ class Not : public Expr {
             : rhs_(rhs) {
         }
 
+        virtual Expr* rhs() const { return rhs_.get(); }
+
         virtual void PrettyPrint() const {
             std::cout << "!(";
             rhs_->PrettyPrint();

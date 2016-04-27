@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <algorithm>
 
 #include "wires.h"
 
@@ -11,7 +12,7 @@ class Module {
     std::vector<std::unique_ptr<WireDecl>> outputs_;
 
     void ScaleLines(const std::string& name, int idx) {
-        for (int i = 0; i < outputs_.size(); ++i) {
+        for (size_t i = 0; i < outputs_.size(); ++i) {
             if (outputs_[i]->name() == name) {
                 if (outputs_[i]->size() >= idx + 1) {
                     return;
@@ -22,6 +23,31 @@ class Module {
         }
 
         outputs_.emplace_back(new WireDecl(name, idx));
+    }
+
+    void BindUsagesToDef_Rec(Expr* e) {
+        Binop* op = nullptr;
+        Not* n = nullptr;
+        WireUsage* wu = nullptr;
+        if ((op = dynamic_cast<Binop*>(e))) {
+            BindUsagesToDef_Rec(op->lhs());
+            BindUsagesToDef_Rec(op->rhs());
+        } else if ((n = dynamic_cast<Not*>(e))) {
+            BindUsagesToDef_Rec(n->rhs());
+        } else if ((wu = dynamic_cast<WireUsage*>(e))) {
+            WireDecl* decl = DeclFor(wu->name());
+            wu->SetDeclRef(decl);
+            if (!wu->IsUseValid()) {
+                std::string msg = "invalid use of ";
+                msg += wu->name() + "[" + std::to_string(wu->index()) + "]: ";
+                if (!decl) {
+                    msg += "no declaration bound";
+                } else if (wu->index() >= decl->size()) {
+                    msg += "invalid index";
+                }
+                throw std::runtime_error(msg);
+            }
+        }
     }
 
     public:
@@ -37,7 +63,7 @@ class Module {
             std::cout << "module " << name_ << "(";
             if (!inputs_.empty()) {
                 inputs_[0]->PrettyPrint();
-                for (int i = 1; i < inputs_.size(); ++i) {
+                for (size_t i = 1; i < inputs_.size(); ++i) {
                     std::cout << ", ";
                     inputs_[i]->PrettyPrint();
                 }
@@ -58,5 +84,27 @@ class Module {
         void AddOutput(OutputDef* out) {
             ScaleLines(out->name(), out->index());
             expressions_.emplace_back(out);
+        }
+
+        WireDecl* DeclFor(const std::string& name) {
+            for (size_t i = 0; i < outputs_.size(); ++i) {
+                if (outputs_[i]->name() == name) {
+                    return outputs_[i].get();
+                }
+            }
+
+            for (size_t i = 0; i < inputs_.size(); ++i) {
+                if (inputs_[i]->name() == name) {
+                    return inputs_[i].get();
+                }
+            }
+
+            return nullptr;
+        }
+
+        void BindUsagesToDef() {
+            for (auto& e : expressions_) {
+                BindUsagesToDef_Rec(e->expr());
+            }
         }
 };

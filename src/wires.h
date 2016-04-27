@@ -46,6 +46,14 @@ class WireUsage : public Expr {
 
         const std::string& name() const { return name_; }
         int index() const { return index_; }
+
+        void SetDeclRef(WireDecl* decl) {
+            decl_ = decl;
+        }
+
+        bool IsUseValid() const {
+            return decl_ && index_ < decl_->size();
+        }
 };
 
 class OutputDef {
@@ -65,5 +73,7 @@ class OutputDef {
             std::cout << " = ";
             src_->PrettyPrint();
         }
+
+        Expr* expr() const { return src_.get(); }
 };
 
