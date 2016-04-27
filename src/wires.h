@@ -49,21 +49,21 @@ class WireUsage : public Expr {
 };
 
 class OutputDef {
-    WireUsage dst_;
+    std::unique_ptr<WireUsage> dst_;
     std::unique_ptr<Expr> src_;
 
     public:
-        OutputDef(const WireUsage& wire, Expr* expr)
+        OutputDef(WireUsage* wire, Expr* expr)
             : dst_(wire), src_(expr) {
         }
-        OutputDef(OutputDef&&) = default;
 
-        const std::string& name() const { return dst_.name(); }
-        int index() const { return dst_.index(); }
+        const std::string& name() const { return dst_->name(); }
+        int index() const { return dst_->index(); }
 
         void PrettyPrint() const {
-            dst_.PrettyPrint();
+            dst_->PrettyPrint();
             std::cout << " = ";
             src_->PrettyPrint();
         }
 };
+

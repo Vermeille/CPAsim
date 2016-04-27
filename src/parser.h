@@ -22,9 +22,9 @@ class Parser {
     static Expr* ParseAnd(std::istream& in);
 
     public:
-        static Module ParseModuleDef(std::istream& in);
-        static WireDecl ParseWireDecl(std::istream& in);
-        static WireUsage ParseWireUsage(std::istream& in);
+        static Module* ParseModuleDef(std::istream& in);
+        static WireDecl* ParseWireDecl(std::istream& in);
+        static WireUsage* ParseWireUsage(std::istream& in);
         static Expr* ParseExpr(std::istream& in);
-        static OutputDef ParseOutputDef(std::istream& in);
+        static OutputDef* ParseOutputDef(std::istream& in);
 };

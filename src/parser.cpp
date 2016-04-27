@@ -56,13 +56,13 @@ int Parser::ParseBinaryInt(std::istream& in) {
 }
 
 
-Module Parser::ParseModuleDef(std::istream& in) {
+Module* Parser::ParseModuleDef(std::istream& in) {
     if (!EatWord(in, "module")) {
         throw std::runtime_error("'module' keyword absent");
     }
 
     std::string name = ParseWord(in);
-    Module mod(name);
+    std::unique_ptr<Module> mod(new Module(name));
     FuckSpaces(in);
     if (!EatChar(in, '(')) {
         throw std::runtime_error("'(' expected after module name");
@@ -70,10 +70,10 @@ Module Parser::ParseModuleDef(std::istream& in) {
 
     FuckSpaces(in);
     if (!EatChar(in, ')')) {
-        mod.AddInput(ParseWireDecl(in));
+        mod->AddInput(ParseWireDecl(in));
         FuckSpaces(in);
         while (EatChar(in, ',')) {
-            mod.AddInput(ParseWireDecl(in));
+            mod->AddInput(ParseWireDecl(in));
         }
     }
 
@@ -89,13 +89,13 @@ Module Parser::ParseModuleDef(std::istream& in) {
 
     FuckSpaces(in);
     while (!EatChar(in, '}')) {
-        mod.AddOutput(ParseOutputDef(in));
+        mod->AddOutput(ParseOutputDef(in));
         FuckSpaces(in);
     }
-    return mod;
+    return mod.release();
 }
 
-WireDecl Parser::ParseWireDecl(std::istream& in) {
+WireDecl* Parser::ParseWireDecl(std::istream& in) {
     std::string name = ParseWord(in);
     int size = 1;
 
@@ -109,10 +109,10 @@ WireDecl Parser::ParseWireDecl(std::istream& in) {
         }
         FuckSpaces(in);
     }
-    return WireDecl(name, size);
+    return new WireDecl(name, size);
 }
 
-WireUsage Parser::ParseWireUsage(std::istream& in) {
+WireUsage* Parser::ParseWireUsage(std::istream& in) {
     std::string name = ParseWord(in);
 
     int idx = 0;
@@ -125,7 +125,7 @@ WireUsage Parser::ParseWireUsage(std::istream& in) {
             throw std::runtime_error("']' expected after wire subscript");
         }
     }
-    return WireUsage(name, idx);
+    return new WireUsage(name, idx);
 }
 
 Expr* Parser::ParseTerm(std::istream& in) {
@@ -138,7 +138,7 @@ Expr* Parser::ParseTerm(std::istream& in) {
         }
         return e.release();
     }
-    return new WireUsage(ParseWireUsage(in));
+    return ParseWireUsage(in);
 }
 
 Expr* Parser::ParseNot(std::istream& in) {
@@ -179,8 +179,8 @@ Expr* Parser::ParseExpr(std::istream& in) {
     return e;
 }
 
-OutputDef Parser::ParseOutputDef(std::istream& in) {
-    WireUsage out = ParseWireUsage(in);
+OutputDef* Parser::ParseOutputDef(std::istream& in) {
+    std::unique_ptr<WireUsage> out(ParseWireUsage(in));
     FuckSpaces(in);
     if (!EatChar(in, '=')) {
         throw std::runtime_error("an output must be followed by '= <expr>;'");
@@ -190,5 +190,6 @@ OutputDef Parser::ParseOutputDef(std::istream& in) {
     if (!EatChar(in, ';')) {
         throw std::runtime_error("An expression must end with a ';'");
     }
-    return OutputDef(out, e.release());
+    return new OutputDef(out.release(), e.release());
 }
+

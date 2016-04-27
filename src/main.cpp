@@ -14,6 +14,6 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    Parser::ParseModuleDef(input_file).PrettyPrint();
+    Parser::ParseModuleDef(input_file)->PrettyPrint();
     return 0;
 }
