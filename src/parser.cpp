@@ -143,7 +143,7 @@ Expr* Parser::ParseTerm(std::istream& in) {
 
 Expr* Parser::ParseNot(std::istream& in) {
     FuckSpaces(in);
-    if (EatChar(in, '!')) {
+    if (EatChar(in, '/')) {
         FuckSpaces(in);
         return new Not(ParseTerm(in));
     }
@@ -166,7 +166,7 @@ Expr* Parser::ParseAnd(std::istream& in) {
     Expr* lhs = ParseOr(in);
 
     FuckSpaces(in);
-    while (EatChar(in, '*')) {
+    while (EatChar(in, '.')) {
         Expr* rhs = ParseOr(in);
         And* op = new And(lhs, rhs);
         lhs = op;
