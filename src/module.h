@@ -2,28 +2,16 @@
 
 #include <string>
 #include <algorithm>
+#include <map>
 
 #include "wires.h"
 
 class Module {
     std::string name_;
-    std::vector<std::unique_ptr<WireDecl>> inputs_;
+
+    std::vector<std::string> inputs_;
+    std::map<std::string, std::unique_ptr<WireDecl>> vars_;
     std::vector<std::unique_ptr<OutputDef>> expressions_;
-    std::vector<std::unique_ptr<WireDecl>> outputs_;
-
-    void ScaleLines(const std::string& name, int idx) {
-        for (size_t i = 0; i < outputs_.size(); ++i) {
-            if (outputs_[i]->name() == name) {
-                if (outputs_[i]->size() >= idx + 1) {
-                    return;
-                } else {
-                    outputs_[i]->SetNbLines(idx + 1);
-                }
-            }
-        }
-
-        outputs_.emplace_back(new WireDecl(name, idx));
-    }
 
     void BindUsagesToDef_Rec(Expr* e) {
         Binop* op = nullptr;
@@ -35,7 +23,10 @@ class Module {
         } else if ((n = dynamic_cast<Not*>(e))) {
             BindUsagesToDef_Rec(n->rhs());
         } else if ((wu = dynamic_cast<WireUsage*>(e))) {
-            WireDecl* decl = DeclFor(wu->name());
+            WireDecl* decl = vars_.at(wu->name()).get();
+            if (decl == nullptr) {
+                throw std::runtime_error(wu->name() + ": no such variable");
+            }
             wu->SetDeclRef(decl);
             if (!wu->IsUseValid()) {
                 std::string msg = "invalid use of ";
@@ -56,16 +47,18 @@ class Module {
         }
 
         void AddInput(WireDecl* w) {
-            inputs_.emplace_back(w);
+            vars_.emplace(std::make_pair(
+                        w->name(), std::unique_ptr<WireDecl>(w)));
+            inputs_.push_back(w->name());
         }
 
         void PrettyPrint() const {
             std::cout << "module " << name_ << "(";
             if (!inputs_.empty()) {
-                inputs_[0]->PrettyPrint();
+                vars_.at(inputs_[0])->PrettyPrint();
                 for (size_t i = 1; i < inputs_.size(); ++i) {
                     std::cout << ", ";
-                    inputs_[i]->PrettyPrint();
+                    vars_.at(inputs_[i])->PrettyPrint();
                 }
             }
             std::cout << ") {\n\n";
@@ -77,29 +70,20 @@ class Module {
         }
 
         void AddOutput(WireUsage* wu, Expr* e) {
-            ScaleLines(wu->name(), wu->index());
-            expressions_.emplace_back(new OutputDef(wu, e));
+            AddOutput(new OutputDef(wu, e));
         }
 
         void AddOutput(OutputDef* out) {
-            ScaleLines(out->name(), out->index());
+            auto var = vars_.find(out->name());
+            if (var == vars_.end()) {
+                vars_.emplace(std::make_pair(
+                            out->name(),
+                            std::unique_ptr<WireDecl>(
+                                new WireDecl(out->name(), out->index() + 1))));
+            } else {
+                var->second->SetNbLines(out->index() + 1);
+            }
             expressions_.emplace_back(out);
-        }
-
-        WireDecl* DeclFor(const std::string& name) {
-            for (size_t i = 0; i < outputs_.size(); ++i) {
-                if (outputs_[i]->name() == name) {
-                    return outputs_[i].get();
-                }
-            }
-
-            for (size_t i = 0; i < inputs_.size(); ++i) {
-                if (inputs_[i]->name() == name) {
-                    return inputs_[i].get();
-                }
-            }
-
-            return nullptr;
         }
 
         void BindUsagesToDef() {

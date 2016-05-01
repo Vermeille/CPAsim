@@ -8,21 +8,20 @@
 
 class WireDecl {
     std::string name_;
-    std::vector<int> values_;
+    int size_;
 
     public:
         WireDecl(const std::string& name, int num_lines = 1)
-            : name_(name), values_(num_lines, 0) {
+            : name_(name), size_(num_lines) {
         }
 
-        int size() const { return values_.size(); }
-        int At(int idx) { return values_[idx]; }
-        void SetNbLines(int nb) { values_.resize(nb, 0); }
+        int size() const { return size_; }
+        void SetNbLines(int nb) { size_ = std::max(size_, nb); }
 
         const std::string& name() const { return name_; }
 
         void PrettyPrint() const {
-            std::cout << name_ << "[" << values_.size() << "]";
+            std::cout << name_ << "[" << size_ << "]";
         }
 };
 
@@ -41,7 +40,7 @@ class WireUsage : public Expr {
         }
 
         virtual int Exec() {
-            return decl_->At(index_);
+            throw std::runtime_error("not implemented");
         }
 
         const std::string& name() const { return name_; }
