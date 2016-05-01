@@ -39,8 +39,8 @@ class WireUsage : public Expr {
             std::cout << name_ << "[" << index_ << "]";
         }
 
-        virtual int Exec() {
-            throw std::runtime_error("not implemented");
+        virtual int Exec(ModuleValues& val) {
+            return val.ValueAt(name_, index_);
         }
 
         const std::string& name() const { return name_; }

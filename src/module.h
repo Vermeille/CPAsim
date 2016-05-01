@@ -91,4 +91,16 @@ class Module {
                 BindUsagesToDef_Rec(e->expr());
             }
         }
+
+        void Execute(ModuleValues& values) {
+            for (auto& e : expressions_) {
+                values.ValueAt(e->name(), e->index()) = e->expr()->Exec(values);
+            }
+        }
+
+        size_t input_size() const { return inputs_.size(); }
+
+        const WireDecl* nth_input(int idx) const {
+            return vars_.at(inputs_[idx]).get();
+        }
 };

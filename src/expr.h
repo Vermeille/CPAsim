@@ -2,9 +2,45 @@
 
 #include <memory>
 
+class WireValue {
+    std::vector<int> values_;
+    public:
+        size_t size() const { return values_.size(); }
+        int At(int idx) const {
+            return values_[idx];
+        }
+
+        int& At(int idx) {
+            if (idx >= values_.size()) {
+                values_.resize(idx + 1, 0);
+            }
+            return values_[idx];
+        }
+};
+
+class ModuleValues {
+    std::map<std::string, std::unique_ptr<WireValue>> vals_;
+    public:
+        int& ValueAt(const std::string& name, int bit) {
+            auto val = vals_.find(name);
+            if (val != vals_.end()) {
+                return val->second->At(bit);
+            } else {
+                auto new_val = vals_.emplace(
+                        std::make_pair(name,
+                            std::unique_ptr<WireValue>(new WireValue))).first;
+                return new_val->second->At(bit);
+            }
+        }
+
+        int ValueAt(const std::string& name, int bit) const {
+            return vals_.at(name)->At(bit);
+        }
+};
+
 class Expr {
     public:
-        virtual int Exec() = 0;
+        virtual int Exec(ModuleValues& val) = 0;
         virtual void PrettyPrint() const = 0;
 };
 
@@ -23,8 +59,8 @@ class Binop : public Expr {
 class Not : public Expr {
     std::unique_ptr<Expr> rhs_;
     public:
-        virtual int Exec() {
-            return !rhs_->Exec();
+        virtual int Exec(ModuleValues& val) {
+            return !rhs_->Exec(val);
         }
 
         Not(Expr* rhs)
@@ -42,8 +78,8 @@ class Not : public Expr {
 
 class Or : public Binop {
     public:
-        virtual int Exec() {
-            return lhs()->Exec() | rhs()->Exec();
+        virtual int Exec(ModuleValues& val) {
+            return lhs()->Exec(val) | rhs()->Exec(val);
         }
 
         Or(Expr* lhs, Expr* rhs)
@@ -61,8 +97,8 @@ class Or : public Binop {
 
 class And : public Binop {
     public:
-        virtual int Exec() {
-            return lhs()->Exec() & rhs()->Exec();
+        virtual int Exec(ModuleValues& val) {
+            return lhs()->Exec(val) & rhs()->Exec(val);
         }
 
         And(Expr* lhs, Expr* rhs)
@@ -80,8 +116,8 @@ class And : public Binop {
 
 class Xor : public Binop {
     public:
-        virtual int Exec() {
-            return lhs()->Exec() ^ rhs()->Exec();
+        virtual int Exec(ModuleValues& val) {
+            return lhs()->Exec(val) ^ rhs()->Exec(val);
         }
 
         Xor(Expr* lhs, Expr* rhs)
