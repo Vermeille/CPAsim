@@ -13,6 +13,13 @@ class ModuleValues {
             return vals_.at(name)->At(bit);
         }
 
+        void Overwrite(ModuleValues&& new_vals) {
+            for (auto& v : new_vals.vals_) {
+                vals_[v.first] = std::move(v.second);
+            }
+            new_vals.vals_.clear();
+        }
+
         std::map<std::string, std::unique_ptr<WireValue>>::iterator begin() {
             return vals_.begin();
         }

@@ -41,9 +41,11 @@ class Module {
         }
 
         void Execute(ModuleValues& values) const {
+            ModuleValues new_vals;
             for (auto& e : expressions_) {
-                values.ValueAt(e->name(), e->index()) = e->expr()->Exec(values);
+                new_vals.ValueAt(e->name(), e->index()) = e->expr()->Exec(values);
             }
+            values.Overwrite(std::move(new_vals));
         }
 
         size_t input_size() const { return inputs_.size(); }
