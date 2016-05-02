@@ -44,26 +44,7 @@ int main(int argc, char** argv) {
 
     std::unique_ptr<Module> mod(Parser::ParseModuleDef(input_file));
     mod->BindUsagesToDef();
-    ModuleValues vals;
-
-    vals.ValueAt("a", 0) = 0;
-    vals.ValueAt("b", 0) = 0;
-    mod->Execute(vals);
-    std::cout << vals.ValueAt("out", 0) << std::endl;
-
-    vals.ValueAt("a", 0) = 1;
-    vals.ValueAt("b", 0) = 0;
-    mod->Execute(vals);
-    std::cout << vals.ValueAt("out", 0) << std::endl;
-
-    vals.ValueAt("a", 0) = 0;
-    vals.ValueAt("b", 0) = 1;
-    mod->Execute(vals);
-    std::cout << vals.ValueAt("out", 0) << std::endl;
-
-    vals.ValueAt("a", 0) = 1;
-    vals.ValueAt("b", 0) = 1;
-    mod->Execute(vals);
-    std::cout << vals.ValueAt("out", 0) << std::endl;
+    mod->PrettyPrint();
+    BuildTruthTable(*mod);
     return 0;
 }
