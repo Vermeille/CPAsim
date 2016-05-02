@@ -1,0 +1,5 @@
+module rs(r, s) {
+
+qandor = (s + qandor) . /r;
+
+}

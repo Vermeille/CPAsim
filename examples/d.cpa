@@ -1,0 +1,8 @@
+module rs(d, e) {
+
+r = /d . e;
+s = d . e
+
+qandor = (s + qandor) . /r;
+
+}
