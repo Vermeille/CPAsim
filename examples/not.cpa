@@ -1,0 +1,5 @@
+module not(a) {
+
+out[0] = /a;
+
+}
