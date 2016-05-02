@@ -131,8 +131,8 @@ WireUsage* Parser::ParseWireUsage(std::istream& in) {
 Expr* Parser::ParseTerm(std::istream& in) {
     FuckSpaces(in);
     if (EatChar(in, '(')) {
+        std::unique_ptr<Expr> e(ParseExpr(in));
         FuckSpaces(in);
-        std::unique_ptr<Expr> e(ParseAnd(in));
         if (!EatChar(in, ')')) {
             throw std::runtime_error("'(' expected");
         }
