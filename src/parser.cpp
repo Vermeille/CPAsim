@@ -31,7 +31,7 @@ std::string Parser::ParseWord(std::istream& in) {
     FuckSpaces(in);
     std::string w;
 
-    while (isalpha(in.peek())) {
+    while (isalnum(in.peek())) {
         w.push_back(in.get());
     }
     return w;
