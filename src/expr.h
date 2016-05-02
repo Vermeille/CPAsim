@@ -36,6 +36,14 @@ class ModuleValues {
         int ValueAt(const std::string& name, int bit) const {
             return vals_.at(name)->At(bit);
         }
+
+        std::map<std::string, std::unique_ptr<WireValue>>::iterator begin() {
+            return vals_.begin();
+        }
+
+        std::map<std::string, std::unique_ptr<WireValue>>::iterator end() {
+            return vals_.end();
+        }
 };
 
 class Expr {
@@ -70,7 +78,7 @@ class Not : public Expr {
         virtual Expr* rhs() const { return rhs_.get(); }
 
         virtual void PrettyPrint() const {
-            std::cout << "!(";
+            std::cout << "/(";
             rhs_->PrettyPrint();
             std::cout << ")";
         }
@@ -108,7 +116,7 @@ class And : public Binop {
         virtual void PrettyPrint() const {
             std::cout << "(";
             lhs()->PrettyPrint();
-            std::cout << " * ";
+            std::cout << " . ";
             rhs()->PrettyPrint();
             std::cout << ")";
         }
