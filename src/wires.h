@@ -5,55 +5,8 @@
 #include <memory>
 
 #include "expr.h"
-
-class WireDecl {
-    std::string name_;
-    int size_;
-
-    public:
-        WireDecl(const std::string& name, int num_lines = 1)
-            : name_(name), size_(num_lines) {
-        }
-
-        int size() const { return size_; }
-        void SetNbLines(int nb) { size_ = std::max(size_, nb); }
-
-        const std::string& name() const { return name_; }
-
-        void PrettyPrint() const {
-            std::cout << name_ << "[" << size_ << "]";
-        }
-};
-
-class WireUsage : public Expr {
-    std::string name_;
-    int index_;
-    WireDecl* decl_;
-
-    public:
-        WireUsage(const std::string& name, int idx = 0)
-            : name_(name), index_(idx), decl_(nullptr) {
-        }
-
-        void PrettyPrint() const {
-            std::cout << name_ << "[" << index_ << "]";
-        }
-
-        virtual int Exec(ModuleValues& val) {
-            return val.ValueAt(name_, index_);
-        }
-
-        const std::string& name() const { return name_; }
-        int index() const { return index_; }
-
-        void SetDeclRef(WireDecl* decl) {
-            decl_ = decl;
-        }
-
-        bool IsUseValid() const {
-            return decl_ && index_ < decl_->size();
-        }
-};
+#include "wire/wirevalue.h"
+#include "wire/wireusage.h"
 
 class OutputDef {
     std::unique_ptr<WireUsage> dst_;

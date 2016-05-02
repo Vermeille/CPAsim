@@ -1,50 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <iostream>
 
-class WireValue {
-    std::vector<int> values_;
-    public:
-        size_t size() const { return values_.size(); }
-        int At(int idx) const {
-            return values_[idx];
-        }
-
-        int& At(int idx) {
-            if (idx >= values_.size()) {
-                values_.resize(idx + 1, 0);
-            }
-            return values_[idx];
-        }
-};
-
-class ModuleValues {
-    std::map<std::string, std::unique_ptr<WireValue>> vals_;
-    public:
-        int& ValueAt(const std::string& name, int bit) {
-            auto val = vals_.find(name);
-            if (val != vals_.end()) {
-                return val->second->At(bit);
-            } else {
-                auto new_val = vals_.emplace(
-                        std::make_pair(name,
-                            std::unique_ptr<WireValue>(new WireValue))).first;
-                return new_val->second->At(bit);
-            }
-        }
-
-        int ValueAt(const std::string& name, int bit) const {
-            return vals_.at(name)->At(bit);
-        }
-
-        std::map<std::string, std::unique_ptr<WireValue>>::iterator begin() {
-            return vals_.begin();
-        }
-
-        std::map<std::string, std::unique_ptr<WireValue>>::iterator end() {
-            return vals_.end();
-        }
-};
+#include "module/modulevalues.h"
 
 class Expr {
     public:
