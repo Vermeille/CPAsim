@@ -92,7 +92,7 @@ class Module {
             }
         }
 
-        void Execute(ModuleValues& values) {
+        void Execute(ModuleValues& values) const {
             for (auto& e : expressions_) {
                 values.ValueAt(e->name(), e->index()) = e->expr()->Exec(values);
             }

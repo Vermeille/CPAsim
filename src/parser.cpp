@@ -150,32 +150,32 @@ Expr* Parser::ParseNot(std::istream& in) {
     return ParseTerm(in);
 }
 
-Expr* Parser::ParseOr(std::istream& in) {
+Expr* Parser::ParseAnd(std::istream& in) {
     Expr* lhs = ParseNot(in);
 
     FuckSpaces(in);
-    while (EatChar(in, '+')) {
-        Expr* rhs = ParseNot(in);
-        Or* op = new Or(lhs, rhs);
-        lhs = op;
-    }
-    return lhs;
-}
-
-Expr* Parser::ParseAnd(std::istream& in) {
-    Expr* lhs = ParseOr(in);
-
-    FuckSpaces(in);
     while (EatChar(in, '.')) {
-        Expr* rhs = ParseOr(in);
+        Expr* rhs = ParseNot(in);
         And* op = new And(lhs, rhs);
         lhs = op;
     }
     return lhs;
 }
 
+Expr* Parser::ParseOr(std::istream& in) {
+    Expr* lhs = ParseAnd(in);
+
+    FuckSpaces(in);
+    while (EatChar(in, '+')) {
+        Expr* rhs = ParseAnd(in);
+        Or* op = new Or(lhs, rhs);
+        lhs = op;
+    }
+    return lhs;
+}
+
 Expr* Parser::ParseExpr(std::istream& in) {
-    Expr* e = ParseAnd(in);
+    Expr* e = ParseOr(in);
     return e;
 }
 
