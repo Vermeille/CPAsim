@@ -56,7 +56,7 @@ class Or : public Binop {
         virtual void PrettyPrint() const {
             std::cout << "(";
             lhs()->PrettyPrint();
-            std::cout << " + ";
+            std::cout << ") + (";
             rhs()->PrettyPrint();
             std::cout << ")";
         }
@@ -75,7 +75,7 @@ class And : public Binop {
         virtual void PrettyPrint() const {
             std::cout << "(";
             lhs()->PrettyPrint();
-            std::cout << " . ";
+            std::cout << ") . (";
             rhs()->PrettyPrint();
             std::cout << ")";
         }
@@ -94,7 +94,7 @@ class Xor : public Binop {
         virtual void PrettyPrint() const {
             std::cout << "(";
             lhs()->PrettyPrint();
-            std::cout << " ^ ";
+            std::cout << ") ^ (";
             rhs()->PrettyPrint();
             std::cout << ")";
         }
