@@ -1,5 +1,7 @@
 #include "modulevalues.h"
 
+#include <iostream>
+
 int& ModuleValues::ValueAt(const std::string& name, int bit) {
     auto val = vals_.find(name);
     if (val != vals_.end()) {
@@ -10,4 +12,15 @@ int& ModuleValues::ValueAt(const std::string& name, int bit) {
                     std::unique_ptr<WireValue>(new WireValue))).first;
         return new_val->second->At(bit);
     }
+}
+
+void ModuleValues::Print() const {
+    for (auto i = vals_.begin(); i != vals_.end(); ++i) {
+        std::cout << i->first << " = ";
+        for (int j = 0; j < i->second->size(); ++j) {
+            std::cout << i->second->At(j);
+        }
+        std::cout << "\t";
+    }
+    std::cout << "\n";
 }

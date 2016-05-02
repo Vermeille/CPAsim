@@ -5,14 +5,7 @@
 void BTT_rec(const Module& mod, ModuleValues& vals, int nb_in, int nb_bit) {
     if (nb_in == mod.input_size()) {
         mod.Execute(vals);
-        for (auto i = vals.begin(); i != vals.end(); ++i) {
-            std::cout << i->first << " = ";
-            for (int j = 0; j < i->second->size(); ++j) {
-                std::cout << i->second->At(j);
-            }
-            std::cout << "\t";
-        }
-        std::cout << "\n";
+        vals.Print();
     } else {
         const WireDecl* var = mod.nth_input(nb_in);
         int next_in = (nb_bit + 1 == var->size()) ? nb_in + 1 : nb_in;

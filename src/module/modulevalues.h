@@ -27,5 +27,7 @@ class ModuleValues {
         std::map<std::string, std::unique_ptr<WireValue>>::iterator end() {
             return vals_.end();
         }
+
+        void Print() const;
 };
 
