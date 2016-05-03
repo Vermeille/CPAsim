@@ -24,7 +24,11 @@ bool Parser::EatWord(std::istream& in, const std::string& w) {
         ++i;
     }
 
-    return i == w.size() && !isalpha(in.peek());
+    if (i != w.size() || isalpha(in.peek())) {
+        in.seekg(-i, std::istream::cur);
+        return false;
+    }
+    return true;
 }
 
 std::string Parser::ParseWord(std::istream& in) {
