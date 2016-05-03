@@ -176,10 +176,18 @@ Expr* Parser::ParseOr(std::istream& in) {
     Expr* lhs = ParseAnd(in);
 
     FuckSpaces(in);
-    while (EatChar(in, '+')) {
-        Expr* rhs = ParseAnd(in);
-        Or* op = new Or(lhs, rhs);
-        lhs = op;
+    while (true) {
+        if (EatChar(in, '+')) {
+            Expr* rhs = ParseAnd(in);
+            Or* op = new Or(lhs, rhs);
+            lhs = op;
+        } else if (EatChar(in, '^')) {
+            Expr* rhs = ParseAnd(in);
+            Xor* op = new Xor(lhs, rhs);
+            lhs = op;
+        } else {
+            break;
+        }
     }
     return lhs;
 }
