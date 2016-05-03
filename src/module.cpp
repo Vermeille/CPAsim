@@ -45,7 +45,7 @@ void Module::PrettyPrint() const {
     std::cout << "\n}\n";
 }
 
-void Module::AddOutput(OutputDef* out) {
+void Module::AddOutput(std::unique_ptr<OutputDef> out) {
     auto var = vars_.find(out->name());
     if (var == vars_.end()) {
         vars_.emplace(std::make_pair(
@@ -55,5 +55,5 @@ void Module::AddOutput(OutputDef* out) {
     } else {
         var->second->SetNbLines(out->index() + 1);
     }
-    expressions_.emplace_back(out);
+    expressions_.emplace_back(std::move(out));
 }

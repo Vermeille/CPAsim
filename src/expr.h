@@ -15,8 +15,8 @@ class Binop : public Expr {
     std::unique_ptr<Expr> lhs_;
     std::unique_ptr<Expr> rhs_;
     public:
-        Binop(Expr* lhs, Expr* rhs)
-            : lhs_(lhs), rhs_(rhs) {
+        Binop(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs)
+            : lhs_(std::move(lhs)), rhs_(std::move(rhs)) {
         }
 
         Expr* lhs() const { return lhs_.get(); }
@@ -30,11 +30,11 @@ class Not : public Expr {
             return !rhs_->Exec(val);
         }
 
-        Not(Expr* rhs)
-            : rhs_(rhs) {
+        Not(std::unique_ptr<Expr> rhs)
+            : rhs_(std::move(rhs)) {
         }
 
-        virtual Expr* rhs() const { return rhs_.get(); }
+        Expr* rhs() const { return rhs_.get(); }
 
         virtual void PrettyPrint() const {
             std::cout << "/(";
@@ -49,8 +49,8 @@ class Or : public Binop {
             return lhs()->Exec(val) | rhs()->Exec(val);
         }
 
-        Or(Expr* lhs, Expr* rhs)
-            : Binop(lhs, rhs) {
+        Or(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs)
+            : Binop(std::move(lhs), std::move(rhs)) {
         }
 
         virtual void PrettyPrint() const {
@@ -68,8 +68,8 @@ class And : public Binop {
             return lhs()->Exec(val) & rhs()->Exec(val);
         }
 
-        And(Expr* lhs, Expr* rhs)
-            : Binop(lhs, rhs) {
+        And(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs)
+            : Binop(std::move(lhs), std::move(rhs)) {
         }
 
         virtual void PrettyPrint() const {
@@ -87,8 +87,8 @@ class Xor : public Binop {
             return lhs()->Exec(val) ^ rhs()->Exec(val);
         }
 
-        Xor(Expr* lhs, Expr* rhs)
-            : Binop(lhs, rhs) {
+        Xor(std::unique_ptr<Expr> lhs, std::unique_ptr<Expr> rhs)
+            : Binop(std::move(lhs), std::move(rhs)) {
         }
 
         virtual void PrettyPrint() const {

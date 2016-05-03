@@ -60,7 +60,7 @@ int Parser::ParseBinaryInt(std::istream& in) {
 }
 
 
-Module* Parser::ParseModuleDef(std::istream& in) {
+std::unique_ptr<Module> Parser::ParseModuleDef(std::istream& in) {
     if (!EatWord(in, "module")) {
         throw std::runtime_error("'module' keyword absent");
     }
@@ -96,10 +96,10 @@ Module* Parser::ParseModuleDef(std::istream& in) {
         mod->AddOutput(ParseOutputDef(in));
         FuckSpaces(in);
     }
-    return mod.release();
+    return mod;
 }
 
-WireDecl* Parser::ParseWireDecl(std::istream& in) {
+std::unique_ptr<WireDecl> Parser::ParseWireDecl(std::istream& in) {
     std::string name = ParseWord(in);
     int size = 1;
 
@@ -113,10 +113,10 @@ WireDecl* Parser::ParseWireDecl(std::istream& in) {
         }
         FuckSpaces(in);
     }
-    return new WireDecl(name, size);
+    return std::unique_ptr<WireDecl>(new WireDecl(name, size));
 }
 
-WireUsage* Parser::ParseWireUsage(std::istream& in) {
+std::unique_ptr<WireUsage> Parser::ParseWireUsage(std::istream& in) {
     std::string name = ParseWord(in);
 
     int idx = 0;
@@ -129,10 +129,10 @@ WireUsage* Parser::ParseWireUsage(std::istream& in) {
             throw std::runtime_error("']' expected after wire subscript");
         }
     }
-    return new WireUsage(name, idx);
+    return std::unique_ptr<WireUsage>(new WireUsage(name, idx));
 }
 
-Expr* Parser::ParseTerm(std::istream& in) {
+std::unique_ptr<Expr> Parser::ParseTerm(std::istream& in) {
     FuckSpaces(in);
     if (EatChar(in, '(')) {
         std::unique_ptr<Expr> e(ParseExpr(in));
@@ -140,51 +140,51 @@ Expr* Parser::ParseTerm(std::istream& in) {
         if (!EatChar(in, ')')) {
             throw std::runtime_error("'(' expected");
         }
-        return e.release();
+        return e;
     }
 
     FuckSpaces(in);
     if (isdigit(in.peek())) {
-        return new Constant(ParseBinaryInt(in));
+        return std::unique_ptr<Constant>(new Constant(ParseBinaryInt(in)));
     } else {
         return ParseWireUsage(in);
     }
 }
 
-Expr* Parser::ParseNot(std::istream& in) {
+std::unique_ptr<Expr> Parser::ParseNot(std::istream& in) {
     FuckSpaces(in);
     if (EatChar(in, '/')) {
         FuckSpaces(in);
-        return new Not(ParseTerm(in));
+        return std::unique_ptr<Not>(new Not(ParseTerm(in)));
     }
     return ParseTerm(in);
 }
 
-Expr* Parser::ParseAnd(std::istream& in) {
-    Expr* lhs = ParseNot(in);
+std::unique_ptr<Expr> Parser::ParseAnd(std::istream& in) {
+    std::unique_ptr<Expr> lhs = ParseNot(in);
 
     FuckSpaces(in);
     while (EatChar(in, '.')) {
-        Expr* rhs = ParseNot(in);
-        And* op = new And(lhs, rhs);
-        lhs = op;
+        std::unique_ptr<Expr> rhs = ParseNot(in);
+        std::unique_ptr<And> op(new And(std::move(lhs), std::move(rhs)));
+        lhs = std::move(op);
     }
     return lhs;
 }
 
-Expr* Parser::ParseOr(std::istream& in) {
-    Expr* lhs = ParseAnd(in);
+std::unique_ptr<Expr> Parser::ParseOr(std::istream& in) {
+    std::unique_ptr<Expr> lhs = ParseAnd(in);
 
     FuckSpaces(in);
     while (true) {
         if (EatChar(in, '+')) {
-            Expr* rhs = ParseAnd(in);
-            Or* op = new Or(lhs, rhs);
-            lhs = op;
+            std::unique_ptr<Expr> rhs = ParseAnd(in);
+            std::unique_ptr<Or> op(new Or(std::move(lhs), std::move(rhs)));
+            lhs = std::move(op);
         } else if (EatChar(in, '^')) {
-            Expr* rhs = ParseAnd(in);
-            Xor* op = new Xor(lhs, rhs);
-            lhs = op;
+            std::unique_ptr<Expr> rhs = ParseAnd(in);
+            std::unique_ptr<Xor> op(new Xor(std::move(lhs), std::move(rhs)));
+            lhs = std::move(op);
         } else {
             break;
         }
@@ -192,12 +192,12 @@ Expr* Parser::ParseOr(std::istream& in) {
     return lhs;
 }
 
-Expr* Parser::ParseExpr(std::istream& in) {
-    Expr* e = ParseOr(in);
+std::unique_ptr<Expr> Parser::ParseExpr(std::istream& in) {
+    std::unique_ptr<Expr> e = ParseOr(in);
     return e;
 }
 
-OutputDef* Parser::ParseOutputDef(std::istream& in) {
+std::unique_ptr<OutputDef> Parser::ParseOutputDef(std::istream& in) {
     std::unique_ptr<WireUsage> out(ParseWireUsage(in));
     FuckSpaces(in);
     if (!EatChar(in, '=')) {
@@ -208,6 +208,25 @@ OutputDef* Parser::ParseOutputDef(std::istream& in) {
     if (!EatChar(in, ';')) {
         throw std::runtime_error("An expression must end with a ';'");
     }
-    return new OutputDef(out.release(), e.release());
+    return std::unique_ptr<OutputDef>(
+            new OutputDef(std::move(out), std::move(e)));
 }
 
+std::vector<std::string> Parser::ParseUses(std::istream& in) {
+    std::vector<std::string> uses;
+    FuckSpaces(in);
+    while (EatWord(in, "use")) {
+        FuckSpaces(in);
+        uses.push_back(ParseWord(in));
+        FuckSpaces(in);
+    }
+
+    return uses;
+}
+
+std::pair<std::vector<std::string>, std::unique_ptr<Module>>
+Parser::ParseFile(std::istream& in) {
+    auto uses = ParseUses(in);
+    std::unique_ptr<Module> mod = ParseModuleDef(in);
+    return std::make_pair(std::move(uses), std::move(mod));
+}

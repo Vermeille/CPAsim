@@ -20,19 +20,20 @@ class Module {
 
         void BindUsagesToDef_Rec(Expr* e);
 
-        void AddInput(WireDecl* w) {
-            vars_.emplace(std::make_pair(
-                        w->name(), std::unique_ptr<WireDecl>(w)));
-            inputs_.push_back(w->name());
+        void AddInput(std::unique_ptr<WireDecl> w) {
+            std::string name = w->name();
+            vars_.emplace(std::make_pair(name, std::move(w)));
+            inputs_.push_back(name);
         }
 
         void PrettyPrint() const;
 
-        void AddOutput(WireUsage* wu, Expr* e) {
-            AddOutput(new OutputDef(wu, e));
+        void AddOutput(std::unique_ptr<WireUsage> wu, std::unique_ptr<Expr> e) {
+            AddOutput(std::unique_ptr<OutputDef>(
+                        new OutputDef(std::move(wu), std::move(e))));
         }
 
-        void AddOutput(OutputDef* out);
+        void AddOutput(std::unique_ptr<OutputDef> out);
 
         void BindUsagesToDef() {
             for (auto& e : expressions_) {

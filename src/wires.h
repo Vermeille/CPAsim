@@ -13,8 +13,8 @@ class OutputDef {
     std::unique_ptr<Expr> src_;
 
     public:
-        OutputDef(WireUsage* wire, Expr* expr)
-            : dst_(wire), src_(expr) {
+        OutputDef(std::unique_ptr<WireUsage> wire, std::unique_ptr<Expr> expr)
+            : dst_(std::move(wire)), src_(std::move(expr)) {
         }
 
         const std::string& name() const { return dst_->name(); }
