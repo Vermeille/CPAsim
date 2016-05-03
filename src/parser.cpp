@@ -138,7 +138,13 @@ Expr* Parser::ParseTerm(std::istream& in) {
         }
         return e.release();
     }
-    return ParseWireUsage(in);
+
+    FuckSpaces(in);
+    if (isdigit(in.peek())) {
+        return new Constant(ParseBinaryInt(in));
+    } else {
+        return ParseWireUsage(in);
+    }
 }
 
 Expr* Parser::ParseNot(std::istream& in) {

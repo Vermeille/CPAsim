@@ -100,3 +100,17 @@ class Xor : public Binop {
         }
 };
 
+class Constant : public Expr {
+    int value_;
+    public:
+        virtual int Exec(ModuleValues&) {
+            return value_;
+        }
+
+        Constant(int val) : value_(val) {}
+
+        virtual void PrettyPrint() const {
+            std::cout << value_;
+        }
+};
+
