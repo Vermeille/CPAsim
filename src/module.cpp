@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "module.h"
 
 void Module::BindUsagesToDef_Rec(Expr* e) {

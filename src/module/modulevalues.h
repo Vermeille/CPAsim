@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include "../wire/wirevalue.h"
 
 class ModuleValues {

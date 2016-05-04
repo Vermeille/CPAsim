@@ -1,4 +1,5 @@
 #include <cctype>
+#include <stdexcept>
 #include "parser.h"
 
 void Parser::FuckSpaces(std::istream& in) {
