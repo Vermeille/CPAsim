@@ -128,6 +128,7 @@ std::unique_ptr<WireUsage> Parser::ParseWireUsage(std::istream& in) {
         if (!EatChar(in, ']')) {
             throw std::runtime_error("']' expected after wire subscript");
         }
+        FuckSpaces(in);
     }
     return std::unique_ptr<WireUsage>(new WireUsage(name, idx));
 }

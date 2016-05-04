@@ -1,0 +1,8 @@
+module demux4(in[4], idx[2]) {
+
+out = in[0] . /idx[0] . /idx[1]
+    + in[1] . /idx[0] . idx[1]
+    + in[2] . idx[0] . /idx[1]
+    + in[3] . idx[0] . idx[1];
+
+}
